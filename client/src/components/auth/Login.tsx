@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/api';
@@ -8,44 +7,53 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
 
   const location = useLocation();
-  const from = location.state?.from || { pathname: '/home' };
+  const fromPath = location.state?.from?.pathname || '/home';
 
   useEffect(() => {
     const accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
-      navigate(from);
+      navigate(fromPath);
     }
-  }, [navigate, from]);
+  }, [navigate, fromPath]);
 
-  const set_Email = (e: { target: { value: string } }) => {
+  const setEmailHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
-  const set_Password = (e: { target: { value: string } }) => {
+  const setPasswordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
+
     try {
       const credentials = { email, password };
       console.log('credentials', credentials);
 
       const response = await login(credentials);
-      console.log('Login successful:', response);
-      sessionStorage.setItem('accessToken', response.AccessToken);
 
-      localStorage.setItem('id', response.user.id);
-      localStorage.setItem('name', response.user.name);
-      localStorage.setItem('email', response.user.email);
+      if (!response.AccessToken) {
+        throw new Error('Invalid login credentials');
+      }
+
+      sessionStorage.setItem('accessToken', response.AccessToken);
+      sessionStorage.setItem('userId', response.user.id);
+      sessionStorage.setItem('userName', response.user.name);
+      sessionStorage.setItem('userEmail', response.user.email);
 
       navigate('/home');
     } catch (error) {
       console.error('Login failed:', error);
-      setLoading(false); // Set loading state to false
+      setErrorMessage(error instanceof Error ? error.message : 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,10 +62,12 @@ export const Login = () => {
       <h2> Login </h2>
       <form className="login-form" onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
-        <input value={email} onChange={set_Email} type="email" placeholder="your email" id="email" name="email" />
+        <input value={email} onChange={setEmailHandler} type="email" placeholder="your email" id="email" name="email" />
 
         <label htmlFor="password">Password</label>
-        <input value={password} onChange={set_Password} type="password" placeholder="your password" id="password" name="password" />
+        <input value={password} onChange={setPasswordHandler} type="password" placeholder="your password" id="password" name="password" />
+
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}

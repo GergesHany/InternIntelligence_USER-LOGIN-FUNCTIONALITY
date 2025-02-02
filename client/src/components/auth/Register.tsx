@@ -1,68 +1,73 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { register } from '../../services/api';
 
 export const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const location = useLocation();
-  const from = location.state?.from || { pathname: '/home' };
+  // If the user is authenticated, redirect to the previous page or home.
+  const fromPath = location.state?.from || '/home';
 
   useEffect(() => {
     const accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
-      navigate(from);
+      navigate(fromPath);
     }
-  }, [navigate, from]);
+  }, [navigate, fromPath]);
 
-  const set_Name = (e: { target: { value: string } }) => {
+  // Handle input changes
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
 
-  const set_Email = (e: { target: { value: string } }) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
-  const set_Password = (e: { target: { value: string } }) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    const userData = {
-      name,
-      email,
-      password,
-    };
+    setErrorMessage(null);
 
     try {
-      const response = await register(userData);
+      const response = await register({ name, email, password });
       console.log('Registration successful:', response);
+      setLoading(false);
       navigate('/login');
     } catch (error) {
-      setLoading(false);
       console.error('Registration failed:', error);
+      setLoading(false);
+      
+      // Check if the error is a string or an instance of Error and set the error message accordingly
+      const message = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      setErrorMessage(message);
     }
   };
 
   return (
     <div className="auth-form-container">
       <form className="register-form" onSubmit={handleSubmit}>
-        <label htmlFor="firstName">Name</label>
-        <input value={name} onChange={set_Name} type="text" placeholder="your name" id="Name" name="name" />
+        <label htmlFor="name">Name</label>
+        <input value={name} onChange={handleNameChange} type="text" placeholder="Your name" id="name" name="name" />
 
         <label htmlFor="email">Email</label>
-        <input value={email} onChange={set_Email} type="email" placeholder="your email" id="email" name="email" />
+        <input value={email} onChange={handleEmailChange} type="email" placeholder="Your email" id="email" name="email"/>
 
         <label htmlFor="password">Password</label>
-        <input value={password} onChange={set_Password} type="password" placeholder="your password" id="password" name="password" />
+        <input value={password} onChange={handlePasswordChange} type="password" placeholder="Your password" id="password" name="password" />
+
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
