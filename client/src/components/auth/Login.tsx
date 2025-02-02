@@ -8,7 +8,7 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
 
   const location = useLocation();
   const fromPath = location.state?.from?.pathname || '/home';
@@ -51,7 +51,13 @@ export const Login = () => {
       navigate('/home');
     } catch (error) {
       console.error('Login failed:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Login failed. Please try again.');
+      let message: string = 'Login failed. Please try again.';
+      if (typeof error === 'object' && error !== null && 'response' in error && 
+          error.response && typeof error.response === 'object' && 'data' in error.response &&
+          error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+        message = error.response.data.message as string;
+      }
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }

@@ -49,8 +49,15 @@ export const Register = () => {
       console.error('Registration failed:', error);
       setLoading(false);
       
-      // Check if the error is a string or an instance of Error and set the error message accordingly
-      const message = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      // Check if the error is an axios error response and set the error message accordingly
+      let message: string = 'Registration failed. Please try again.';
+
+      if (typeof error === 'object' && error !== null && 'response' in error && 
+          error.response && typeof error.response === 'object' && 'data' in error.response &&
+          error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+        message = error.response.data.message as string;
+      }
+
       setErrorMessage(message);
     }
   };

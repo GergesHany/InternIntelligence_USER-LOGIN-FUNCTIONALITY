@@ -28,18 +28,24 @@ const logout = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json('Please fill all fields');
+    return res.status(400).json({
+      message: 'Please fill all fields',
+    });
   }
 
   const user = await getUserByEmail(email);
   if (user === null) {
-    return res.status(400).json('Invalid credentials');
+    return res.status(400).json({
+      message: 'Invalid credentials',
+    });
   }
 
   try {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json('Invalid credentials');
+      return res.status(400).json({
+        message: 'Invalid credentials',
+      });
     }
 
     const AccessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN, {
@@ -67,19 +73,25 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.log('Error: ', err);
-    res.status(500).json('Server Error');
+    res.status(500).json({
+      message: 'Server Error',
+    });
   }
 };
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
-    return res.status(400).json('Please fill all fields');
+    return res.status(400).json({
+      message: 'Please fill all fields',
+    })
   }
 
   const user = await getUserByEmail(email);
   if (user !== null) {
-    return res.status(400).json('User already exists');
+    return res.status(400).json({
+      message: 'User already exists',
+    })
   }
 
   try {
