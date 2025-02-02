@@ -9,7 +9,7 @@ export const Home = () => {
     navigate('/login');
   };
 
-  const Name: string = localStorage.getItem('userName') || '';
+  const Name: string = sessionStorage.getItem('userName') || '';
 
   return (
     <div>
