@@ -121,6 +121,8 @@ This project implements the backend logic for handling user login, registration,
 - **Rate Limiting**: Implement rate limiting for login attempts to prevent brute-force attacks.
 - **Token-based Authentication**: JWT (JSON Web Tokens) are used for maintaining user sessions after login. The **RefreshToken** is stored in a secure cookie to allow users to stay logged in without re-entering their credentials frequently.
 
+<hr>
+
 ## Set up environment variables (e.g., database credentials, JWT secret, etc.) in a .env file:
 
 ```bash
@@ -134,3 +136,5 @@ DB_PORT =
 ACCESS_TOKEN =
 REFRESH_TOKEN =
 ```
+
+## Demo Video
